@@ -160,11 +160,11 @@ fi
 # Supertonic, so an ordinary `uv run` leaves this environment unchanged.
 # Honor a contributor's existing supported interpreter instead of replacing
 # a Python 3.12 environment merely because .python-version recommends 3.13.
-PYTHON_ARGS=()
 if [ -x "$ROOT/.venv/bin/python" ]; then
-  PYTHON_ARGS=(--python "$ROOT/.venv/bin/python")
+  (cd "$ROOT" && uv sync --locked --extra dev --python "$ROOT/.venv/bin/python")
+else
+  (cd "$ROOT" && uv sync --locked --extra dev)
 fi
-(cd "$ROOT" && uv sync --locked --extra dev "${PYTHON_ARGS[@]}")
 (cd "$ROOT" && uv run --no-sync python scripts/check-sherpa-source.py)
 
 BINARIES="$TAURI_DIR/binaries"

@@ -23,7 +23,7 @@ def test_macos_launcher_uses_repo_local_pins() -> None:
 
 def test_macos_launcher_uses_locked_official_sherpa_wheels() -> None:
     source = LAUNCHER.read_text(encoding="utf-8")
-    assert 'uv sync --locked --extra dev "${PYTHON_ARGS[@]}"' in source
+    assert 'uv sync --locked --extra dev --python "$ROOT/.venv/bin/python"' in source
     assert "scripts/check-sherpa-source.py" in source
     assert "build_macos_sherpa" not in source
     assert "--inexact" not in source
@@ -69,7 +69,7 @@ def test_launcher_readiness_and_cleanup_are_bound_to_process_generation():
     assert '/api/shutdown' not in source
 
 
-def _bootstrap_source_launcher(tmp_path, machine, node_arch=None):
+def _bootstrap_source_launcher(tmp_path, machine, node_arch=None, existing_environment=True):
     """Exercise architecture staging without installing, recording or launching."""
     import os
     import shutil
@@ -114,10 +114,11 @@ def _bootstrap_source_launcher(tmp_path, machine, node_arch=None):
         path = tools_dir / name
         path.write_text(text)
         path.chmod(0o755)
-    interpreter = checkout / ".venv/bin/python"
-    interpreter.parent.mkdir(parents=True)
-    interpreter.write_text("#!/bin/sh\nexit 0\n")
-    interpreter.chmod(0o755)
+    if existing_environment:
+        interpreter = checkout / ".venv/bin/python"
+        interpreter.parent.mkdir(parents=True)
+        interpreter.write_text("#!/bin/sh\nexit 0\n")
+        interpreter.chmod(0o755)
     log = tmp_path / "commands.log"
     env = os.environ | {
         "PATH": str(tools_dir) + os.pathsep + os.environ["PATH"],
@@ -168,3 +169,12 @@ def test_launcher_rejects_mismatched_node_before_staging(tmp_path):
     assert "Node must run natively" in result.stderr
     assert not commands
     assert not (checkout / "src-tauri/binaries/whisperstream-engine-x86_64-apple-darwin").exists()
+
+
+def test_clean_checkout_bootstrap_uses_default_python_without_empty_bash_array(tmp_path):
+    result, _checkout, commands = _bootstrap_source_launcher(
+        tmp_path, "x86_64", existing_environment=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "uv sync --locked --extra dev\n" in commands
+    assert "--python" not in commands
