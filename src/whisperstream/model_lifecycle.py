@@ -68,6 +68,10 @@ class PlatformModelLifecycleFactory:
             from .macos_model_lifecycle import MacosModelLifecycleAdapter
 
             return MacosModelLifecycleAdapter()
+        if system == "Darwin" and machine == "x86_64":
+            from .macos_onnx_model_lifecycle import MacosOnnxModelLifecycleAdapter
+
+            return MacosOnnxModelLifecycleAdapter()
         return UnavailableModelLifecycleAdapter()
 
 

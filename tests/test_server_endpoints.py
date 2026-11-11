@@ -3134,6 +3134,12 @@ class TestRunBenchmarkWorker:
 class TestMaybePrepareValidation:
     """Launch-time GPU validation in _maybe_prepare_llama_server (round 02)."""
 
+    @pytest.fixture(autouse=True)
+    def _supported_bundled_runtime(self, monkeypatch):
+        # These tests exercise portable GPU lifecycle behavior. Intel's
+        # unsupported sidecar path is tested separately.
+        monkeypatch.setattr("whisperstream.llama_server.bundled_llama_runtime_supported", lambda: True)
+
     def _server(self, **config_overrides):
         config = _make_mock_config(
             enhancement_provider="local",

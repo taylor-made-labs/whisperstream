@@ -132,7 +132,7 @@ class PlatformRecordingAudioPolicyFactory:
                 stop_path=self._stop_path,
                 mode=self._mode,
             )
-        if system == "Darwin" and machine == "arm64":
+        if system == "Darwin" and machine in {"arm64", "aarch64", "x86_64"}:
             from .macos_audio_policy import MacosRecordingAudioPolicyAdapter
 
             return MacosRecordingAudioPolicyAdapter(

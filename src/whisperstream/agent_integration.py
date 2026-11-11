@@ -73,7 +73,7 @@ def create_agent_integration_adapters(
             WindowsAgentPluginAdapter(reconcile_cli=reconcile_cli),
             WindowsAgentHookAdapter(transport=transport),
         )
-    if resolved_system == "Darwin" and resolved_machine in {"arm64", "aarch64"}:
+    if resolved_system == "Darwin" and resolved_machine in {"arm64", "aarch64", "x86_64"}:
         from .macos_agent_integration import (
             MacOSAgentHookAdapter,
             MacOSAgentPluginAdapter,

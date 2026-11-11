@@ -73,7 +73,7 @@ def _runtime_request(runtime: object, *, acceleration: RuntimeAcceleration):
 def test_darwin_capabilities_preserve_task_5_1_surfaces() -> None:
     advanced = {
         item.capability_id: item
-        for item in create_advanced_capability_report("Darwin").capabilities
+        for item in create_advanced_capability_report("Darwin", machine="arm64").capabilities
     }
     assert advanced["local-llm-runtime"].state is AdvancedCapabilityState.AVAILABLE
     assert advanced["finetune-registry-evaluation"].state is (
@@ -82,7 +82,7 @@ def test_darwin_capabilities_preserve_task_5_1_surfaces() -> None:
 
     daily = {
         item.capability_id: item
-        for item in create_daily_use_capability_report("Darwin").capabilities
+        for item in create_daily_use_capability_report("Darwin", machine="arm64").capabilities
     }
     assert daily["managed-local-enhancement"].state is CapabilityState.AVAILABLE
 
@@ -367,6 +367,7 @@ def test_darwin_discovers_the_target_suffixed_dev_sidecar(
     sidecar.parent.mkdir(parents=True)
     sidecar.write_bytes(b"Mach-O")
     monkeypatch.setattr("platform.system", lambda: "Darwin")
+    monkeypatch.setattr("platform.machine", lambda: "arm64")
     monkeypatch.setattr("sys.executable", str(tmp_path / "missing-python"))
     monkeypatch.setattr(module, "__file__", str(source))
     assert module.find_bundled_llama_server() == sidecar

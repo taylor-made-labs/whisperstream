@@ -328,7 +328,9 @@ class TestMakeSttManager(unittest.TestCase):
 
     def test_darwin_parakeet_builds_native_fluidaudio_manager(self):
         mac_manager = MagicMock(name="MacosFluidAudioManager")
-        with patch("whisperstream.stt_factory.sys.platform", "darwin"), patch(
+        with patch("whisperstream.stt_factory.platform.machine", return_value="arm64"), patch(
+            "whisperstream.stt_factory.sys.platform", "darwin"
+        ), patch(
             "whisperstream.stt_factory._macos_manager_class",
             return_value=mac_manager,
         ), patch("whisperstream.stt_factory.is_present") as present:

@@ -50,7 +50,7 @@ def _split_sentences(text: str) -> list[str]:
 
 
 class MacOSSpeechSynthesisAdapter:
-    """Own the existing lazy, RAM-aware engine policy on Apple Silicon.
+    """Own the existing lazy, RAM-aware engine policy on macOS.
 
     Model selection and leases are platform-neutral. Mirroring that owner keeps
     the exact ten Supertonic and nine Kokoro presets, automatic thresholds, and

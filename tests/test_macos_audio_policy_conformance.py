@@ -128,8 +128,9 @@ def _adapter(
     )
 
 
+@pytest.mark.parametrize("machine", ["arm64", "aarch64", "x86_64"])
 def test_factory_is_lazy_and_selects_macos_adapter(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, machine: str,
 ) -> None:
     events: list[str] = []
     monkeypatch.setattr(
@@ -142,7 +143,7 @@ def test_factory_is_lazy_and_selects_macos_adapter(
         start_path=lambda: None,
         stop_path=lambda: None,
         system="Darwin",
-        machine="arm64",
+        machine=machine,
     )
 
     adapter = factory.create()

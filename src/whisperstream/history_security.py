@@ -123,10 +123,10 @@ class PlatformHistorySecurityFactory:
         machine = (self._machine or platform.machine()).lower()
         return system == "Windows" and machine in {"amd64", "x86_64"}
 
-    def _is_darwin_arm64(self) -> bool:
+    def _is_supported_darwin(self) -> bool:
         system = self._system or platform.system()
         machine = (self._machine or platform.machine()).lower()
-        return system == "Darwin" and machine in {"arm64", "aarch64"}
+        return system == "Darwin" and machine in {"arm64", "aarch64", "x86_64"}
 
     def history(self) -> HistoryStoreAdapter:
         if self._history_adapter is None:
@@ -139,7 +139,7 @@ class PlatformHistorySecurityFactory:
                     lockdown_enabled=self._lockdown_enabled,
                     lockdown_locked=self._lockdown_locked,
                 )
-            elif self._is_darwin_arm64():
+            elif self._is_supported_darwin():
                 from .macos_history_security import MacosHistoryStoreAdapter
 
                 self._history_adapter = MacosHistoryStoreAdapter(
@@ -160,7 +160,7 @@ class PlatformHistorySecurityFactory:
                 self._file_adapter = WindowsFileWorkflowAdapter(
                     chooser=self._file_chooser
                 )
-            elif self._is_darwin_arm64():
+            elif self._is_supported_darwin():
                 from .macos_history_security import MacosFileWorkflowAdapter
 
                 self._file_adapter = MacosFileWorkflowAdapter(
@@ -178,7 +178,7 @@ class PlatformHistorySecurityFactory:
                 self._license_adapter = WindowsLicenseStateAdapter(
                     manager_provider=self._license_manager
                 )
-            elif self._is_darwin_arm64():
+            elif self._is_supported_darwin():
                 from .macos_history_security import MacosLicenseStateAdapter
 
                 self._license_adapter = MacosLicenseStateAdapter(

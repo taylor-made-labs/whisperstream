@@ -17,13 +17,15 @@ Selection (research C1 — default-fallback to Parakeet for unknown values):
   ``model_dir(ModelId.QWEN3_ASR_06B_INT8)``).
 * ``"parakeet"`` OR any unknown / empty value -> ``ParakeetManager``,
   constructed exactly as the existing call sites did.
-* On Darwin, multilingual Parakeet v3 uses FluidAudio. English Parakeet v2,
+* On Apple Silicon, multilingual Parakeet v3 uses FluidAudio. Intel Macs use
+  the CPU sherpa worker for Parakeet v3. English Parakeet v2,
   Qwen and Cohere use the official locked sherpa-onnx worker.
 """
 from __future__ import annotations
 
 import logging
 import os
+import platform
 import sys
 from typing import TYPE_CHECKING, Dict
 
@@ -43,6 +45,15 @@ STT_BACKEND_ENV_VAR = "WHISPERSTREAM_STT_BACKEND"
 # Used as the QwenManager model_name for logging/metadata only.
 QWEN_MODEL_NAME = "qwen3-asr-0.6b-int8"
 COHERE_MODEL_NAME = "cohere-transcribe-03-2026-int8"
+
+
+def uses_fluidaudio_stt() -> bool:
+    """FluidAudio's native worker is available only on Apple Silicon.
+
+    Intel Macs use the existing CPU sherpa worker and ONNX model inventory.
+    Keep construction and presence checks on the same architecture decision.
+    """
+    return sys.platform == "darwin" and platform.machine().lower() in {"arm64", "aarch64"}
 
 
 def _selection_from_config(config: "WhisperstreamConfig"):
@@ -156,7 +167,7 @@ def make_stt_manager(
     selection = _selection_from_config(config)
     backend, source = _resolve_backend(config)
 
-    if (sys.platform == "darwin" and backend not in {"qwen", "cohere"}
+    if (uses_fluidaudio_stt() and backend not in {"qwen", "cohere"}
             and model_id_for_parakeet(selection.parakeet_model) == ModelId.PARAKEET_V3_INT8):
         MacosFluidAudioManager = _macos_manager_class()
         logger.info("stt backend selected backend=parakeet adapter=fluidaudio source=%s", source)
@@ -273,7 +284,7 @@ def parakeet_model_present(
     ``config_manager`` is accepted for signature stability but no longer
     consulted (the registry owns destination + presence now).
     """
-    if sys.platform == "darwin" and model_id_for_parakeet(config.parakeet_model) == ModelId.PARAKEET_V3_INT8:
+    if uses_fluidaudio_stt() and model_id_for_parakeet(config.parakeet_model) == ModelId.PARAKEET_V3_INT8:
         from .macos_stt_manager import macos_stt_model_present
         return macos_stt_model_present()
     return is_present(model_id_for_parakeet(config.parakeet_model))

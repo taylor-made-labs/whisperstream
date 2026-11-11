@@ -1,4 +1,4 @@
-"""Apple Silicon Claude plugin and fail-open hook transport owners.
+"""macOS Claude plugin and fail-open hook transport owners.
 
 Claude CLI processes, plugin roots, hook bodies, session tokens, routes, and
 decision payloads remain private to these adapters. Shared results expose only

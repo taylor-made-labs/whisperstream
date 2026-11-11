@@ -47,8 +47,8 @@ FORWARDER = (
 RUST_HUD_OWNER = ROOT / "src-tauri" / "src" / "macos_window_lifecycle.rs"
 
 pytestmark = pytest.mark.skipif(
-    platform.system() != "Darwin" or platform.machine().lower() != "arm64",
-    reason="native Apple Silicon conformance only",
+    platform.system() != "Darwin" or platform.machine().lower() not in {"arm64", "aarch64", "x86_64"},
+    reason="native macOS conformance only",
 )
 
 

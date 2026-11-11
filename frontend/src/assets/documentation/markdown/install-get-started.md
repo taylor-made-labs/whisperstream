@@ -27,7 +27,10 @@ If you are switching from an earlier installation, back up your data and keep it
 3. Open Whisperstream from Applications.
 4. Review the license agreement and select **I agree** to continue.
 
-Intel Macs are not supported.
+The official Mac installer requires Apple Silicon. Intel Macs can use the
+experimental [source build](https://github.com/lanreal-io/whisperstream/blob/main/docs/development/building-from-source.md#intel-mac-source-builds)
+for dictation and Agent Speak, with Python 3.12 or 3.13. Managed local AI cleanup
+is unavailable in the Intel source build.
 
 ## Build and run from source
 

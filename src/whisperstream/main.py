@@ -5622,6 +5622,10 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
                 file_only=args.file_only,
             )
             if args.lifecycle_probe_worker:
+                from .stt_factory import uses_fluidaudio_stt
+
+                if not uses_fluidaudio_stt():
+                    raise RuntimeError("FluidAudio lifecycle probe requires Apple Silicon")
                 from .macos_stt_manager import MacosFluidAudioManager  # noqa: PLC0415
 
                 lifecycle_manager = MacosFluidAudioManager(

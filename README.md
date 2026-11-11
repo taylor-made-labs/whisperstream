@@ -44,8 +44,10 @@ See the full feature tour at [whisperstream.io](https://whisperstream.io).
 ## 📥 Get Whisperstream
 
 Download the free official installer from [whisperstream.io](https://whisperstream.io).
-It's available for Windows, and macOS is in beta. The official Windows app
-updates automatically.
+It's available for Windows, and macOS is in beta. The Mac installer requires
+Apple Silicon; Intel Macs can use the experimental
+[source build](docs/development/building-from-source.md#intel-mac-source-builds).
+The official Windows app updates automatically.
 
 Or you can [build it from source](docs/development/building-from-source.md).
 Source builds don't update themselves, so you install new versions manually.

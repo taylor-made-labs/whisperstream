@@ -139,7 +139,7 @@ def test_advanced_inventory_is_complete_native_free_and_truthful() -> None:
     )
 
     windows = create_advanced_capability_report("Windows")
-    darwin = create_advanced_capability_report("Darwin")
+    darwin = create_advanced_capability_report("Darwin", machine="arm64")
     unknown = create_advanced_capability_report("Plan9")
     json.dumps(windows.as_dict())
     win = {item.capability_id: item for item in windows.capabilities}

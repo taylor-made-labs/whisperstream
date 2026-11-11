@@ -39,7 +39,7 @@ Automatic is recommended for most users. To choose a compatible model yourself:
 
 The picker appears when more than one model supports the selected language. Cohere Transcribe is available only through Manual selection and requires more memory than the other choices. Choosing Parakeet automatically uses its English or multilingual version as appropriate.
 
-On a Mac, Parakeet v3 runs on an engine built for Apple silicon and downloads in a different format, so its download size differs from the table above. Parakeet v2, Qwen3 ASR, and Cohere Transcribe use the same model files on Windows and Mac. Turn off **Choose speech model manually** to return to the recommended model for your language.
+On an Apple Silicon Mac, Parakeet v3 runs on an engine built for Apple silicon and downloads in a different format, so its download size differs from the table above. Parakeet v2, Qwen3 ASR, and Cohere Transcribe use the same model files on Windows and Mac. Experimental Intel Mac source builds also use the Windows-compatible ONNX files for Parakeet v3, running on CPU. Turn off **Choose speech model manually** to return to the recommended model for your language.
 
 Whisperstream keeps downloaded models when you switch, so switching back does not require another download. To remove one, open the model picker and use **Delete** beside a downloaded model that is not in use. To remove every unused speech-recognition model, open **Advanced** and select **Delete unused models** under **Model storage location**. A deleted model can be downloaded again later.
 

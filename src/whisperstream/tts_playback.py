@@ -131,10 +131,10 @@ def _is_windows_x64(system: str | None, machine: str | None) -> bool:
     ).lower() in {"amd64", "x86_64"}
 
 
-def _is_darwin_arm64(system: str | None, machine: str | None) -> bool:
+def _is_supported_darwin(system: str | None, machine: str | None) -> bool:
     return (system or platform.system()) == "Darwin" and (
         machine or platform.machine()
-    ).lower() in {"arm64", "aarch64"}
+    ).lower() in {"arm64", "aarch64", "x86_64"}
 
 
 def create_speech_synthesis_adapter(
@@ -153,7 +153,7 @@ def create_speech_synthesis_adapter(
             engine_manager=engine_manager,
             logger=logger,
         )
-    if _is_darwin_arm64(system, machine):
+    if _is_supported_darwin(system, machine):
         from .macos_tts_playback import MacOSSpeechSynthesisAdapter
 
         return MacOSSpeechSynthesisAdapter(
@@ -184,7 +184,7 @@ def create_speech_playback_adapter(
     is_darwin = (
         runtime_platform == "darwin"
         if runtime_platform is not None
-        else _is_darwin_arm64(system, machine)
+        else _is_supported_darwin(system, machine)
     )
 
     if is_windows:

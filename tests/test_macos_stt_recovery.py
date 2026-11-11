@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import platform
 import sys
 import time
 from pathlib import Path
@@ -30,8 +31,8 @@ from tests._speech_fixture import requires_speech_fixture, speech_audio, speech_
 
 
 pytestmark = [pytest.mark.usefixtures("accepted_eula"), pytest.mark.skipif(
-    sys.platform != "darwin",
-    reason="the native FluidAudio recovery suite is macOS-only",
+    sys.platform != "darwin" or platform.machine().lower() not in {"arm64", "aarch64"},
+    reason="the native FluidAudio recovery suite requires Apple Silicon",
 )]
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

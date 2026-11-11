@@ -84,7 +84,7 @@ def create_application_context_adapter(
         from .windows_app_context import WindowsApplicationContextAdapter
 
         return WindowsApplicationContextAdapter()
-    if resolved_system == "Darwin" and resolved_machine == "arm64":
+    if resolved_system == "Darwin" and resolved_machine in {"arm64", "aarch64", "x86_64"}:
         from .macos_app_context import MacosApplicationContextAdapter
 
         return MacosApplicationContextAdapter()
