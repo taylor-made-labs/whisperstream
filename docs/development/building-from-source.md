@@ -78,3 +78,19 @@ configure an external cleanup provider. Dictation and Agent Speak do not
 require cleanup. The launcher stages fail-fast placeholders for unavailable
 sidecars solely because Tauri validates all external binary names during a
 source build; these placeholders do not provide those features.
+
+## Codex CLI compatibility
+
+During Intel source testing with Codex 0.165.0, hooks under its default shared
+background server reached Whisperstream but did not bind to the wrapper's
+per-session reply token. The managed session stayed read-only. Starting Codex
+without that shared server restored end-to-end typed reply routing:
+
+```sh
+whisperstream codex --no-daemon
+```
+
+This is a tested workaround for that runtime, not an automatically added wrapper
+flag. Use it only when the installed `codex --help` lists `--no-daemon`; older
+versions may not support it. The [official Codex CLI reference](https://learn.chatgpt.com/docs/cli/reference)
+describes the option. Normal project and hook trust still apply.
