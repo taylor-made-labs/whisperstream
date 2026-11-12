@@ -85,7 +85,7 @@ impl WindowLifecyclePort for WindowsWindowPort {
     ) -> Result<(bool, bool), WindowFailure> {
         if action == WindowAction::Quit {
             #[cfg(debug_assertions)]
-            crate::signal_dev_backend_shutdown();
+            crate::signal_dev_backend_shutdown(&self.app);
             self.app.exit(0);
             return Ok((false, false));
         }

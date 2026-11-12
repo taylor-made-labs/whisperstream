@@ -30,6 +30,36 @@ backend and opens the app. Keep its terminal open while you use the app. It
 stores data in a separate development folder, so it won't touch an installed
 copy. Speech models download during first-run setup.
 
+## Native permission testing on macOS
+
+For live microphone and global-shortcut testing, build the local source app:
+
+```sh
+uv run --no-sync python scripts/bundle_source_app.py
+```
+
+The command only builds and prints the app path; it does not open the app,
+record audio, request permissions, install certificates, or add a login item.
+Close an existing source app before rebuilding. The builder refuses to replace
+a running bundle, uses the repository's pinned tools and signs the development
+app locally with an ad-hoc signature.
+
+Open `src-tauri/target/debug/bundle/macos/Whisperstream.app` after the build.
+Its signed GUI starts and owns the source Python backend, using the separately
+configured `Whisperstream-dev` profile. The frontend is bundled, so Vite does
+not need to run. To choose another isolated profile, pass `--data-dir /absolute/path`.
+The installed application's data directory is refused. Pass `--no-hotkeys` to
+build an app whose backend does not register global shortcuts.
+
+The source app remains tied to this checkout and its `.venv`; it is not a
+standalone installer. Grant permissions to the built app when macOS prompts.
+Rebuilding an ad-hoc signed app changes its identity and may require refreshing
+its permission entry. Quit the app before replacing or moving it.
+
+Keep using `scripts/run_dev.sh` for frontend hot reload. That raw development
+launch starts Python separately from the GUI, so macOS can associate its
+permissions with the interpreter or launching terminal instead of Whisperstream.
+
 ## Intel Mac source builds
 
 Intel source builds use the CPU speech backend for dictation and Agent Speak.

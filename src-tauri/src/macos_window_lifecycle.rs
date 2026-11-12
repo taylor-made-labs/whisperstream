@@ -344,7 +344,7 @@ impl MacosNativeBridge for TauriMacosBridge {
 
     fn quit(&mut self) -> Result<(), WindowFailure> {
         #[cfg(debug_assertions)]
-        crate::signal_dev_backend_shutdown();
+        crate::signal_dev_backend_shutdown(&self.app);
         self.app.exit(0);
         Ok(())
     }
