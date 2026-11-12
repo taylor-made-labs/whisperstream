@@ -49,6 +49,11 @@ from .stt_worker_protocol import (
 
 
 _MISSING_METADATA = object()
+# sherpa-onnx's offline frontend uses a 10 ms shift and snip_edges=False:
+# NumFrames = (samples + shift / 2) // shift. Less than half a shift produces
+# no features, which the NeMo encoder cannot decode. Preserve everything at
+# and above that first-frame boundary (80 samples at the native 16 kHz rate).
+_MIN_AUDIO_MS = 5
 
 
 def _read_metadata(result: Any, name: str) -> Any:
@@ -369,6 +374,8 @@ class ParakeetWorkerRuntime:
         recognizer = self._recognizer
         if recognizer is None:
             raise RuntimeError("Parakeet STT runtime is not loaded")
+        if waveform.size * 1000 < sample_rate * _MIN_AUDIO_MS:
+            return None, ""
         stream = recognizer.create_stream()
         stream.accept_waveform(sample_rate, waveform)
         recognizer.decode_stream(stream)

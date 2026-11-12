@@ -1,6 +1,7 @@
 """Admission applies to every isolated ASR route without changing its health."""
 import logging
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 import numpy as np
 import pytest
@@ -91,6 +92,83 @@ def test_detector_transport_timeout_closes_exact_child_without_retry(tmp_path):
     process.shutdown.assert_called_once()
 
 
+def test_cold_readiness_has_one_longer_budget_but_admission_keeps_short_timeout(tmp_path, monkeypatch):
+    process = MagicMock()
+    process.request_audio.return_value = {'admitted': False, 'detector_failed': False}
+    # Native imports took twelve seconds: longer than a normal admission, but
+    # within the explicitly chosen cold-readiness budget.
+    monkeypatch.setattr('whisperstream.speech_gate_client.monotonic',
+                        MagicMock(side_effect=[100.0, 100.0, 112.0]))
+    client = SpeechGateClient(SpeechGateSettings(), diagnostic_dir=tmp_path,
+        logger=logging.getLogger(__name__), timeout=.1, startup_timeout=30.0,
+        process_factory=MagicMock(return_value=process))
+    audio = np.ones(1600, dtype=np.float32)
+    try:
+        assert client.has_speech(audio) is False
+        assert client.has_speech(audio) is False
+        assert not client.failed
+        process.start.assert_called_once_with(timeout=30.0)
+        process.request.assert_called_once_with(
+            'load', body={'enabled': True, 'threshold': .2, 'min_speech_ms': 96}, timeout=18.0)
+        assert [call.kwargs['timeout'] for call in process.request_audio.call_args_list] == [.1, .1]
+    finally:
+        client.close()
+
+
+def test_exhausted_cold_budget_closes_owned_child_and_retains_fail_open(tmp_path, monkeypatch):
+    process = MagicMock()
+    monkeypatch.setattr('whisperstream.speech_gate_client.monotonic',
+                        MagicMock(side_effect=[100.0, 100.0, 131.0]))
+    factory = MagicMock(return_value=process)
+    client = SpeechGateClient(SpeechGateSettings(), diagnostic_dir=tmp_path,
+        logger=logging.getLogger(__name__), startup_timeout=30.0, process_factory=factory)
+    audio = np.ones(1600, dtype=np.float32)
+    assert client.has_speech(audio) is True
+    assert client.failed
+    assert client.has_speech(audio) is True
+    factory.assert_called_once()
+    process.request.assert_not_called()
+    process.request_audio.assert_not_called()
+    process.shutdown.assert_called_once_with(timeout=1.0)
+
+
+@pytest.mark.parametrize('timeout', [0, -1, float('nan'), float('inf')])
+def test_cold_budget_must_be_positive_and_finite(tmp_path, timeout):
+    with pytest.raises(ValueError):
+        SpeechGateClient(SpeechGateSettings(), diagnostic_dir=tmp_path,
+            logger=logging.getLogger(__name__), startup_timeout=timeout)
+
+
+def test_healthy_empty_and_impossibly_short_windows_do_not_start_worker(tmp_path):
+    factory = MagicMock()
+    client = SpeechGateClient(SpeechGateSettings(min_speech_ms=96), diagnostic_dir=tmp_path,
+        logger=logging.getLogger(__name__), process_factory=factory)
+    for audio in (np.empty(0, dtype=np.float32), np.zeros(1600, dtype=np.float32),
+                  np.ones(84, dtype=np.float32), np.ones(1535, dtype=np.float32)):
+        assert client.has_speech(audio) is False
+    assert not client.failed
+    factory.assert_not_called()
+
+
+def test_worker_load_reports_ready_only_after_model_prepare(monkeypatch):
+    from whisperstream.stt_worker_speech_gate import SpeechGateWorkerRuntime
+
+    gate = MagicMock()
+    monkeypatch.setattr('whisperstream.stt_worker_speech_gate.SpeechGate',
+                        MagicMock(return_value=gate))
+    runtime = SpeechGateWorkerRuntime()
+    request = SimpleNamespace(backend='speech_gate', operation='load', body={})
+    gate.prepare.side_effect = RuntimeError('native model preparation failed')
+    with pytest.raises(RuntimeError):
+        runtime.dispatch(request, b'')
+    assert runtime._gate is None
+    gate.close.assert_called_once()
+    gate.prepare.side_effect = None
+    assert runtime.dispatch(request, b'') == ({'state': 'ready', 'loaded': True}, False)
+    assert runtime._gate is gate
+    assert gate.prepare.call_count == 2
+
+
 def test_healthy_unload_can_start_new_detector_with_frozen_settings(tmp_path, monkeypatch):
     first, second = MagicMock(), MagicMock()
     for process in (first, second):
@@ -136,6 +214,9 @@ def test_real_detector_child_rejects_room_noise_and_cleans_up(tmp_path):
         assert not client.failed
         process = client._process
         assert process.pid is not None
+        assert client.has_speech(waveform) is False
+        assert client._process is process
+        assert not client.failed
     finally:
         client.close()
     assert not process.is_running

@@ -56,6 +56,11 @@ class SpeechGate:
     def close(self) -> None:
         self._session = None
 
+    def prepare(self) -> None:
+        """Prepare the hash-checked CPU detector without processing audio."""
+        if self.settings.enabled:
+            self._load_session()
+
     def has_speech(self, audio: np.ndarray, *, sample_rate: int = SAMPLE_RATE) -> bool:
         if not self.settings.enabled or self.failed or sample_rate != SAMPLE_RATE:
             return True

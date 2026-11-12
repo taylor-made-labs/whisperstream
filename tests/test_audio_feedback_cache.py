@@ -43,11 +43,43 @@ class TestAudioFeedbackCache(unittest.TestCase):
         fake_winsound.MB_ICONHAND = 16
 
         merged = {**fakes, "winsound": fake_winsound}
-        with patch.dict(sys.modules, merged):
+        with patch.dict(sys.modules, merged), patch("whisperstream.audio_feedback.sys.platform", "win32"):
             af = AudioFeedback(logger=self.logger, enabled=True)
             af.play_error()
 
             fake_winsound.MessageBeep.assert_called_once_with(16)
+
+    def test_play_error_without_override_skips_unsupported_system_beep(self):
+        """Mac/Linux error handling must not import the Windows-only module."""
+        for host in ("darwin", "linux"):
+            with self.subTest(platform=host):
+                fakes, fake_mixer = _fake_pygame_modules()
+                with patch.dict(sys.modules, fakes), patch("whisperstream.audio_feedback.sys.platform", host):
+                    af = AudioFeedback(logger=self.logger, enabled=True)
+                    with patch("builtins.__import__", wraps=__import__) as imports:
+                        af.play_error()
+                    self.assertNotIn("winsound", [call.args[0] for call in imports.call_args_list])
+                    fake_mixer.Sound.assert_not_called()
+                    self.logger.exception.assert_not_called()
+
+    def test_play_error_custom_sound_keeps_mac_mixer_path(self):
+        fakes, fake_mixer = _fake_pygame_modules()
+        with patch.dict(sys.modules, fakes), patch("whisperstream.audio_feedback.sys.platform", "darwin"):
+            af = AudioFeedback(logger=self.logger, enabled=True, volume=0.3)
+            with patch.object(af, "_get_sound_path") as sound_path:
+                sound_path.return_value.__enter__.return_value = "synthetic-error.wav"
+                af.play_error("synthetic-error.wav")
+            fake_mixer.Sound.assert_called_once_with("synthetic-error.wav")
+            fake_mixer.Sound.return_value.set_volume.assert_called_once_with(0.3)
+            fake_mixer.Sound.return_value.play.assert_called_once_with()
+
+    def test_muted_error_never_plays_a_custom_sound_or_imports_winsound(self):
+        af = AudioFeedback(logger=self.logger, enabled=False)
+        with patch.object(af, "_play_sound") as play, patch("builtins.__import__", wraps=__import__) as imports:
+            af.play_error()
+            af.play_error("synthetic-error.wav")
+        play.assert_not_called()
+        self.assertNotIn("winsound", [call.args[0] for call in imports.call_args_list])
 
 
 if __name__ == "__main__":

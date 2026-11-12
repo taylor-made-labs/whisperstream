@@ -81,6 +81,20 @@ def test_zero_samples_need_no_session(monkeypatch):
     loader.assert_not_called()
 
 
+def test_prepare_loads_model_without_audio_and_admission_reuses_it(monkeypatch):
+    session = ProbabilitySession([0.01] * 3)
+    gate = SpeechGate(SpeechGateSettings())
+    constructor = MagicMock(return_value=session)
+    monkeypatch.setattr('whisperstream.speech_gate.ort.InferenceSession', constructor)
+    gate.prepare()
+    constructor.assert_called_once()
+    assert session.inputs == []
+    assert not gate.has_speech(audio(3))
+    constructor.assert_called_once()
+    assert len(session.inputs) == 3
+    gate.close()
+
+
 def test_failure_falls_back_and_warns_once(monkeypatch, caplog):
     gate = SpeechGate(SpeechGateSettings())
     loader = MagicMock(side_effect=RuntimeError('private path must not be logged'))

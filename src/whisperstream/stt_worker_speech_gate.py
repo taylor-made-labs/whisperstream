@@ -23,7 +23,17 @@ class SpeechGateWorkerRuntime:
                     'engine_id': self.engine_id, 'capabilities': {},
                     'limits': {'audio_dtype': 'float32-le', 'audio_rank': 1}}, False
         if operation == 'load':
-            self._gate = SpeechGate(SpeechGateSettings(**request.body))
+            gate = SpeechGate(SpeechGateSettings(**request.body))
+            try:
+                # Ready includes the native model session, so the first admit
+                # uses the same short inference timeout as every later one.
+                gate.prepare()
+            except Exception:
+                gate.close()
+                raise
+            if self._gate is not None:
+                self._gate.close()
+            self._gate = gate
             return {'state': 'ready', 'loaded': True}, False
         if operation == 'admit':
             waveform, rate = decode_audio_request(request, payload)
