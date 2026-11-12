@@ -11330,10 +11330,14 @@ class WhisperstreamServer:
         from ..enhancement_models import get_local_model, resolve_local_model_path
         from ..llama_server import (
             LlamaServerSupervisor,
+            bundled_llama_runtime_supported,
             find_bundled_llama_server,
             runtime_acceleration_for_platform,
         )
 
+        if not bundled_llama_runtime_supported():
+            self._logger.info("[LlamaServer] skipping prepare reason=unsupported_mac_architecture")
+            return
         cfg = self._app.config
         # Use effective_provider() so that under lockdown (where it returns
         # "local") the llama-server is prepared even when the stored provider

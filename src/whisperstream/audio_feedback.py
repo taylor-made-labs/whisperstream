@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -100,12 +101,20 @@ class AudioFeedback:
         return self._play_sound("stop.wav", override_path)
 
     def play_error(self, override_path: Optional[str] = None) -> None:
-        """Play error sound. Uses custom path, or falls back to system beep."""
+        """Play a custom error sound or the Windows system beep if supported."""
         if not self._enabled:
             return
 
         if override_path:
             self._play_sound("error.wav", override_path)
+            return
+
+        # The portable mixer has no bundled error asset. Windows provides a
+        # system error beep; other platforms keep custom-sound support above
+        # and otherwise skip the cue instead of importing a Windows module
+        # while already handling another failure.
+        if sys.platform != "win32":
+            self._logger.debug("audio feedback skipped event=error reason=system_beep_unsupported")
             return
 
         try:

@@ -55,8 +55,12 @@ def verify() -> None:
         wheel_platform = 'win_amd64'
     elif sys.platform == 'darwin' and machine == 'arm64':
         wheel_platform = 'macosx_11_0_arm64'
+    elif sys.platform == 'darwin' and machine == 'x86_64':
+        if sys.version_info.minor not in (12, 13):
+            raise ValueError('Intel macOS requires CPython 3.12 or 3.13 (ONNX Runtime wheel availability)')
+        wheel_platform = 'macosx_10_15_x86_64'
     else:
-        raise ValueError('Source wheels require Windows x64 or Apple Silicon macOS')
+        raise ValueError('Source wheels require Windows x64 or macOS arm64/x86_64')
     if sys.implementation.name != 'cpython' or abi not in ('cp312', 'cp313', 'cp314'):
         raise ValueError('Source wheels require CPython 3.12, 3.13 or 3.14')
     manifest = json.loads(MANIFEST.read_text(encoding='utf-8'))

@@ -134,6 +134,53 @@
           "sha256": "fa3dfbc10af9af9f59d7b53386d47be99bc8e2ba12aab63ca5a3c91bbd483a00"
         }
       ]
+    },
+    {
+      "distribution": "sherpa-onnx",
+      "filename": "sherpa_onnx-1.13.8-cp312-cp312-macosx_10_15_x86_64.whl",
+      "url": "https://files.pythonhosted.org/packages/36/e6/a19257d7c60bf04c07f8d0772b943b6596b6b10cfb0694b7794d36630d40/sherpa_onnx-1.13.8-cp312-cp312-macosx_10_15_x86_64.whl",
+      "sha256": "ef218d6545a9dcc2aff7043f39026c7d78d6cf46a3876d450d508feebffc00a9",
+      "size": 2350796,
+      "native_files": [
+        {
+          "sha256": "72cb80f24126abbea826db2530d807aa4bd18769d5bd1e38bdf34009d7265563",
+          "path": "sherpa_onnx/lib/_sherpa_onnx.cpython-312-darwin.so"
+        }
+      ]
+    },
+    {
+      "distribution": "sherpa-onnx",
+      "filename": "sherpa_onnx-1.13.8-cp313-cp313-macosx_10_15_x86_64.whl",
+      "url": "https://files.pythonhosted.org/packages/7d/4d/b442afd30eff64b83112b54fa866c5d2e3a5aeec13ee8bd665c7b146fba1/sherpa_onnx-1.13.8-cp313-cp313-macosx_10_15_x86_64.whl",
+      "sha256": "5f8df54514af5025b9d428403dd9a27f6fe252b5e162311bf5c47228a50d0cc5",
+      "size": 2351015,
+      "native_files": [
+        {
+          "sha256": "7a14f1487c602f736537feb99c0ede442352b0ddbf3deeb4333bc14b5903fbbc",
+          "path": "sherpa_onnx/lib/_sherpa_onnx.cpython-313-darwin.so"
+        }
+      ]
+    },
+    {
+      "distribution": "sherpa-onnx-core",
+      "filename": "sherpa_onnx_core-1.13.8-py3-none-macosx_10_15_x86_64.whl",
+      "url": "https://files.pythonhosted.org/packages/17/2d/98e309811cff9fec48ae48a051b4caab44046755f6bc58daab0c475f40cb/sherpa_onnx_core-1.13.8-py3-none-macosx_10_15_x86_64.whl",
+      "sha256": "917422880287baa0f0ae1bd10d9528fa78af8cc7c233d2a953a185a4fe8d83f2",
+      "size": 10878335,
+      "native_files": [
+        {
+          "sha256": "2bf27180c09e6fd3f407c9ab25205ebf1ff95f2d53bfa35e35409b5849e0ac70",
+          "path": "sherpa_onnx/lib/libonnxruntime.dylib"
+        },
+        {
+          "sha256": "417cf689e344765ab540fabf0de82ba729293f652759622a51f9560d6be146d6",
+          "path": "sherpa_onnx/lib/libsherpa-onnx-c-api.dylib"
+        },
+        {
+          "sha256": "218bdac370517aec7f032983d15d5f7971209d7e829f46e028a5093ddb2ba7db",
+          "path": "sherpa_onnx/lib/libsherpa-onnx-cxx-api.dylib"
+        }
+      ]
     }
   ]
 }

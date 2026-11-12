@@ -6,6 +6,7 @@ processes, endpoints, hooks, and model availability stay in their adapters.
 
 from __future__ import annotations
 
+import platform
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -98,7 +99,9 @@ def _presentation(state: AdvancedCapabilityState) -> AdvancedCapabilityPresentat
     return AdvancedCapabilityPresentation.DISABLE
 
 
-def create_advanced_capability_report(platform_name: str) -> AdvancedCapabilityReport:
+def create_advanced_capability_report(
+    platform_name: str, *, machine: str | None = None
+) -> AdvancedCapabilityReport:
     """Return static implementation support without importing native owners."""
 
     normalized = platform_name.strip().lower()
@@ -124,6 +127,11 @@ def create_advanced_capability_report(platform_name: str) -> AdvancedCapabilityR
             AdvancedCapabilityState.AVAILABLE,
             "metal-runtime",
         )
+        if (machine or platform.machine()).lower() == "x86_64":
+            states["local-llm-runtime"] = (
+                AdvancedCapabilityState.UNAVAILABLE,
+                "apple-silicon-runtime-required",
+            )
         states["finetune-registry-evaluation"] = (
             AdvancedCapabilityState.DEVELOPMENT_ONLY,
             "dev-tools-only",

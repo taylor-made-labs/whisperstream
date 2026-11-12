@@ -95,12 +95,12 @@
     "docs/offline/articles/dictionary.md": "sha256:6ca8f98bdbc6680499b073d4b7a6deb855be26c46fcefa985b2f0ad857cd6c0b",
     "docs/offline/articles/enhancement-profiles-routing.md": "sha256:135b61be1d4ae9c61b8a4c81b76f70e19eb0c4508ee97b4433a28cdc5975a70c",
     "docs/offline/articles/enhancement-providers.md": "sha256:958a320ca11036db3fa97141d7e6d8da91895663608a8f05241802c198efa1f8",
-    "docs/offline/articles/install-get-started.md": "sha256:60accca3c67f23bcf5c9858e1e2fc0432a10bb3af15da0d8de3c6c50e942066a",
-    "docs/offline/articles/languages-models.md": "sha256:7c56dbb238f7d3e4abcde347702c2e2084230a0c824b8138417e5642bd47856a",
+    "docs/offline/articles/install-get-started.md": "sha256:70aeae44efca431e164b611a76058ef9518cb07ef9dcbf070f640ee587da11b3",
+    "docs/offline/articles/languages-models.md": "sha256:de222c9104d05b797bc7ad6ddb0316cbb983a556e6d864efd520dfbb3c64617c",
     "docs/offline/articles/live-preview.md": "sha256:22394daaf00d3990500323601682bfc8ca0dc3498ac179bcadc96a263b1d19dd",
     "docs/offline/articles/lockdown-mode.md": "sha256:a87cd9bf3c4e3b29eab50236fb43286ffae2e8f97d5c9e49c535887a4d8b497b",
     "docs/offline/articles/managed-lockdown-deployment.md": "sha256:eac16341d3a53f27c9780397f90df1ae56bedc67085f0601951517e2a15ad21b",
-    "docs/offline/articles/model-recovery.md": "sha256:48b58e829fdc28fd2f5c3a886471c6168101159fc6fd60597bb7c710549d52e5",
+    "docs/offline/articles/model-recovery.md": "sha256:5dcbd595950134a962f3ca803d012c241b54dc7fa76d38b4f274a548293f0243",
     "docs/offline/articles/recording-controls.md": "sha256:0438da288bd6b6f67a5d4c7b602c308e07de60a85e9158c2043de1970fe11cb5",
     "docs/offline/articles/settings-data-locations.md": "sha256:14bf9381d5a273f2d614d5d05b054f17629c115e36a35f52a837db08accc3607",
     "docs/offline/articles/text-insertion.md": "sha256:4ff1db5ea6ad0a592740a91eaaf607b9b6dd60707112d3155541e01a55a66da6",
@@ -116,10 +116,10 @@
     "frontend/public/fonts/Inter-Variable.woff2": "sha256:3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62"
   },
   "files": {
-    "markdown/install-get-started.md": "sha256:4c4ff3041038239cd57d774805507fc9c62d4d5d8bc955f541f5e88411348c2c",
+    "markdown/install-get-started.md": "sha256:fb64017741ce459ad12ea13551f04ab4ab0a20de79278b08bcce0d3eefd5359f",
     "markdown/app-basics.md": "sha256:3bcf0f11e47140869529ec47a3c42de914fda2c10b5f339747eb825df8b29d43",
     "markdown/recording-controls.md": "sha256:07b4b94925dbdfb9087aec2a84fa5a349f8d941cffc6aab7e5f676f35d1f8c42",
-    "markdown/languages-models.md": "sha256:3e1ac9376b4347d45599f1e17b7c6a595dce675ac92454e91fde71aae0a635ca",
+    "markdown/languages-models.md": "sha256:82d750251d6d41ef616e09ebfb7e7ceb2d55d4ab6dfde198078f21eb04c52451",
     "markdown/audio.md": "sha256:f072750f8422a0d39aeccf79ebd51ab88e47c5edba071e6aa41ba08f71b4e5e3",
     "markdown/live-preview.md": "sha256:12e67fdc27ab5b74cb05f58caa4b25a91c629231de763f98c30625dd003fb5fd",
     "markdown/text-insertion.md": "sha256:5ab4a88f237c3f3823ed613dda3ac7a64f74f3a139bafaad37ee3fe5d8c938f6",
@@ -132,8 +132,8 @@
     "markdown/agent-speak.md": "sha256:1b0939043c6eb07591316d4e2aa4545da4d58d3e7434b138b8b035f6b84227de",
     "markdown/coding-agent-sessions.md": "sha256:290be6f11653050a7e0e934f3e77bcbd957133064f8ae3ae2ccc671bf53ac92a",
     "markdown/settings-data-locations.md": "sha256:9eb19db5c9435fbff523282e54c58fd06fb21c8ec07b6b302a417e9980ead1ae",
-    "markdown/model-recovery.md": "sha256:a11e0b4eda947a1f22b176a5e3db5ce2786a41d3689823b0b74b1bc737022113",
+    "markdown/model-recovery.md": "sha256:3b01c6128ed75da2376d4dc722bcaae39e3afa3ddabc4a604ecf98d0fd1be5ba",
     "markdown/README.md": "sha256:b9c9f2831ff6143b874f11ec8639e0a9b53b530020f7c9847b1ff407a0fd7e1d",
-    "Whisperstream-Documentation.pdf": "sha256:7795d3a4e426d358cbe690c0c0aeda71ac777a855985efeb05df1b515a9f5557"
+    "Whisperstream-Documentation.pdf": "sha256:7535d1969e0a7cc0ba6f460a9d69680b2acec85a92421a8094f03331687215eb"
   }
 }

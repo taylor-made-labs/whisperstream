@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start the source backend and Tauri shell on native Apple Silicon.
+# Start the source backend and Tauri shell on native macOS.
 
 set -euo pipefail
 
@@ -45,10 +45,17 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
-if [ "$(uname -s)" != "Darwin" ] || [ "$(uname -m)" != "arm64" ]; then
-  echo "scripts/run_dev.sh requires native Apple Silicon macOS." >&2
+if [ "$(uname -s)" != "Darwin" ]; then
+  echo "scripts/run_dev.sh requires macOS." >&2
   exit 1
 fi
+HOST_ARCH="$(uname -m)"
+case "$HOST_ARCH" in
+  arm64) NODE_ARCH=arm64; TARGET_TRIPLE=aarch64-apple-darwin ;;
+  x86_64) NODE_ARCH=x64; TARGET_TRIPLE=x86_64-apple-darwin ;;
+  *) echo "Unsupported macOS architecture: $HOST_ARCH" >&2; exit 1 ;;
+esac
+export WHISPERSTREAM_NODE_ARCH="$NODE_ARCH"
 
 for tool in cargo curl node npm uv; do
   if ! command -v "$tool" >/dev/null 2>&1; then
@@ -56,6 +63,11 @@ for tool in cargo curl node npm uv; do
     exit 1
   fi
 done
+
+if [ "$(node -p 'process.arch')" != "$NODE_ARCH" ]; then
+  echo "Node must run natively for $HOST_ARCH; install the matching Node build." >&2
+  exit 1
+fi
 
 export WHISPERSTREAM_AGENT_PLUGIN_VARIANT=dev
 if [ -n "$DATA_DIR" ]; then
@@ -81,12 +93,13 @@ const path = require("node:path");
 
 const root = process.env.FRONTEND_DIR;
 const lock = JSON.parse(fs.readFileSync(path.join(root, "package-lock.json"), "utf8"));
+const arch = process.env.WHISPERSTREAM_NODE_ARCH;
 const packages = [
-  "@tauri-apps/cli-darwin-arm64",
-  "@rollup/rollup-darwin-arm64",
-  "@esbuild/darwin-arm64",
-  "@tailwindcss/oxide-darwin-arm64",
-  "lightningcss-darwin-arm64",
+  `@tauri-apps/cli-darwin-${arch}`,
+  `@rollup/rollup-darwin-${arch}`,
+  `@esbuild/darwin-${arch}`,
+  `@tailwindcss/oxide-darwin-${arch}`,
+  `lightningcss-darwin-${arch}`,
 ];
 let valid = true;
 for (const name of packages) {
@@ -112,12 +125,13 @@ const fs = require("node:fs");
 const path = require("node:path");
 const root = process.env.FRONTEND_DIR;
 const lock = JSON.parse(fs.readFileSync(path.join(root, "package-lock.json"), "utf8"));
+const arch = process.env.WHISPERSTREAM_NODE_ARCH;
 const packages = [
-  "@tauri-apps/cli-darwin-arm64",
-  "@rollup/rollup-darwin-arm64",
-  "@esbuild/darwin-arm64",
-  "@tailwindcss/oxide-darwin-arm64",
-  "lightningcss-darwin-arm64",
+  `@tauri-apps/cli-darwin-${arch}`,
+  `@rollup/rollup-darwin-${arch}`,
+  `@esbuild/darwin-${arch}`,
+  `@tailwindcss/oxide-darwin-${arch}`,
+  `lightningcss-darwin-${arch}`,
 ];
 for (const name of packages) {
   const version = lock.packages?.[`node_modules/${name}`]?.version;
@@ -126,16 +140,16 @@ for (const name of packages) {
 }
 JS
 )"
-  echo "[mac-dev] repairing pinned Apple Silicon Node bindings"
+  echo "[mac-dev] repairing pinned $HOST_ARCH Node bindings"
   # Package specs contain no whitespace. Intentional splitting passes each
   # lock-derived name@version as one npm argument on macOS Bash 3.2.
   # shellcheck disable=SC2086
-  (cd "$FRONTEND" && npm install --no-save --package-lock=false --os=darwin --cpu=arm64 $specs)
+  (cd "$FRONTEND" && npm install --no-save --package-lock=false --os=darwin --cpu="$NODE_ARCH" $specs)
 }
 
 if [ ! -f "$FRONTEND/node_modules/vite/package.json" ] || [ ! -f "$FRONTEND/node_modules/@tauri-apps/cli/package.json" ]; then
   echo "[mac-dev] frontend dependencies missing, running npm ci"
-  (cd "$FRONTEND" && npm ci --include=optional --os=darwin --cpu=arm64)
+  (cd "$FRONTEND" && npm ci --include=optional --os=darwin --cpu="$NODE_ARCH")
 fi
 if ! native_node_bindings_valid; then
   install_native_node_bindings
@@ -144,43 +158,74 @@ fi
 
 # The locked official sherpa-onnx wheels serve every sherpa STT family and
 # Supertonic, so an ordinary `uv run` leaves this environment unchanged.
-(cd "$ROOT" && uv sync --locked --extra dev)
+# Honor a contributor's existing supported interpreter instead of replacing
+# a Python 3.12 environment merely because .python-version recommends 3.13.
+if [ -x "$ROOT/.venv/bin/python" ]; then
+  (cd "$ROOT" && uv sync --locked --extra dev --python "$ROOT/.venv/bin/python")
+else
+  (cd "$ROOT" && uv sync --locked --extra dev)
+fi
 (cd "$ROOT" && uv run --no-sync python scripts/check-sherpa-source.py)
-
-WORKER="$WORKER_DIR/target/release/whisperstream-macos-stt-worker"
-WORKER_NEEDS_BUILD=0
-if [ ! -x "$WORKER" ]; then
-  WORKER_NEEDS_BUILD=1
-elif find "$WORKER_DIR/src" "$WORKER_DIR/Cargo.toml" "$WORKER_DIR/Cargo.lock" -type f -newer "$WORKER" -print -quit | grep -q .; then
-  WORKER_NEEDS_BUILD=1
-fi
-if [ "$WORKER_NEEDS_BUILD" -eq 1 ]; then
-  echo "[mac-dev] building the native macOS STT worker"
-  MACOSX_DEPLOYMENT_TARGET=14.0 cargo build --release --locked \
-    --manifest-path "$WORKER_DIR/Cargo.toml"
-fi
 
 BINARIES="$TAURI_DIR/binaries"
 mkdir -p "$BINARIES"
-WORKER_SIDECAR="$BINARIES/whisperstream-macos-stt-worker-aarch64-apple-darwin"
-if [ ! -f "$WORKER_SIDECAR" ] || ! cmp -s "$WORKER" "$WORKER_SIDECAR"; then
-  cp "$WORKER" "$WORKER_SIDECAR"
-  chmod u+x "$WORKER_SIDECAR"
+if [ "$HOST_ARCH" = arm64 ]; then
+  WORKER="$WORKER_DIR/target/release/whisperstream-macos-stt-worker"
+  WORKER_NEEDS_BUILD=0
+  if [ ! -x "$WORKER" ]; then
+    WORKER_NEEDS_BUILD=1
+  elif find "$WORKER_DIR/src" "$WORKER_DIR/Cargo.toml" "$WORKER_DIR/Cargo.lock" -type f -newer "$WORKER" -print -quit | grep -q .; then
+    WORKER_NEEDS_BUILD=1
+  fi
+  if [ "$WORKER_NEEDS_BUILD" -eq 1 ]; then
+    echo "[mac-dev] building the native macOS STT worker"
+    MACOSX_DEPLOYMENT_TARGET=14.0 cargo build --release --locked \
+      --manifest-path "$WORKER_DIR/Cargo.toml"
+  fi
+
+  WORKER_SIDECAR="$BINARIES/whisperstream-macos-stt-worker-$TARGET_TRIPLE"
+  if [ ! -f "$WORKER_SIDECAR" ] || ! cmp -s "$WORKER" "$WORKER_SIDECAR"; then
+    cp "$WORKER" "$WORKER_SIDECAR"
+    chmod u+x "$WORKER_SIDECAR"
+  fi
+else
+  # Intel uses sherpa-onnx on CPU. The FluidAudio worker cannot run here.
+  # Tauri still validates every externalBin, even for source development.
+  cat > "$BINARIES/whisperstream-macos-stt-worker-$TARGET_TRIPLE" <<'STUB'
+#!/bin/sh
+echo "FluidAudio STT is unavailable on Intel; use the CPU speech backend." >&2
+exit 1
+STUB
+  chmod u+x "$BINARIES/whisperstream-macos-stt-worker-$TARGET_TRIPLE"
 fi
 
 # Debug builds never spawn the packaged engine, but Tauri validates every
 # externalBin path before compiling.
-ENGINE_STUB="$BINARIES/whisperstream-engine-aarch64-apple-darwin"
+ENGINE_STUB="$BINARIES/whisperstream-engine-$TARGET_TRIPLE"
 if [ ! -e "$ENGINE_STUB" ]; then
   : > "$ENGINE_STUB"
   chmod u+x "$ENGINE_STUB"
 fi
 
-LLAMA_SIDECAR="$BINARIES/llama-server-aarch64-apple-darwin"
+LLAMA_SIDECAR="$BINARIES/llama-server-$TARGET_TRIPLE"
 LLAMA_LIBRARY="$TAURI_DIR/resources/llama-cpp/libllama.dylib"
-if [ ! -x "$LLAMA_SIDECAR" ] || [ ! -f "$LLAMA_LIBRARY" ]; then
-  echo "[mac-dev] staging the pinned Metal llama-server and dylibs"
-  (cd "$ROOT" && uv run --no-sync python scripts/fetch_macos_llama_server.py)
+if [ "$HOST_ARCH" = arm64 ]; then
+  if [ ! -x "$LLAMA_SIDECAR" ] || [ ! -f "$LLAMA_LIBRARY" ]; then
+    echo "[mac-dev] staging the pinned Metal llama-server and dylibs"
+    (cd "$ROOT" && uv run --no-sync python scripts/fetch_macos_llama_server.py)
+  fi
+else
+  # Managed local AI cleanup requires the Metal runtime. Intel supports
+  # dictation, Agent Speak and optional external cleanup providers instead.
+  cat > "$LLAMA_SIDECAR" <<'STUB'
+#!/bin/sh
+echo "Managed local AI cleanup is unavailable in the Intel source build." >&2
+exit 1
+STUB
+  chmod u+x "$LLAMA_SIDECAR"
+  mkdir -p "$(dirname "$LLAMA_LIBRARY")"
+  echo "Managed local AI cleanup is unavailable on Intel." > "$(dirname "$LLAMA_LIBRARY")/intel-unavailable.txt"
+  echo "[mac-dev] Intel CPU speech enabled; managed local AI cleanup is unavailable"
 fi
 
 # This is the standalone terminal wrapper, not a packaged application. Tauri

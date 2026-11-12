@@ -79,9 +79,12 @@ def test_rejects_native_files_not_listed_in_record(tmp_path):
 
 @pytest.mark.parametrize(('system', 'machine', 'wheel_platform'), [
     ('win32', 'AMD64', 'win_amd64'), ('darwin', 'arm64', 'macosx_11_0_arm64'),
+    ('darwin', 'x86_64', 'macosx_10_15_x86_64'),
 ])
 @pytest.mark.parametrize('minor', [12, 13, 14])
 def test_supported_platform_selects_binding_and_core_before_import(monkeypatch, system, machine, wheel_platform, minor):
+    if machine == 'x86_64' and minor == 14:
+        pytest.skip('Intel ONNX Runtime supports CPython 3.12 and 3.13')
     manifest = json.loads(checker.MANIFEST.read_text())
     selected = []
     monkeypatch.setattr(checker.sys, 'platform', system)
@@ -102,9 +105,10 @@ def test_supported_platform_selects_binding_and_core_before_import(monkeypatch, 
     assert sorted(entry['distribution'] for entry in selected) == ['sherpa-onnx', 'sherpa-onnx-core']
 
 
-def test_intel_mac_fails_before_loading_distributions(monkeypatch):
+def test_intel_python314_fails_before_loading_distributions(monkeypatch):
     monkeypatch.setattr(checker.sys, 'platform', 'darwin')
     monkeypatch.setattr(checker.platform, 'machine', lambda: 'x86_64')
+    monkeypatch.setattr(checker.sys, 'version_info', SimpleNamespace(major=3, minor=14))
     monkeypatch.setattr(checker.metadata, 'distribution', lambda _: pytest.fail('unsupported host must not load native distributions'))
-    with pytest.raises(ValueError, match='Apple Silicon'):
+    with pytest.raises(ValueError, match='CPython 3.12 or 3.13'):
         checker.verify()

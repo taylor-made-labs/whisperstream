@@ -7,6 +7,7 @@ never cross this schema-v1 boundary.
 
 from __future__ import annotations
 
+import platform
 from dataclasses import dataclass
 from enum import Enum
 
@@ -109,6 +110,7 @@ def create_daily_use_capability_report(
     platform_name: str,
     *,
     audio_policy_available: bool | None = None,
+    machine: str | None = None,
 ) -> DailyUseCapabilityReport:
     """Build implementation support without importing native owners."""
 
@@ -165,6 +167,17 @@ def create_daily_use_capability_report(
                     if audio_policy_available is False
                     else "output-control-unconfirmed"
                 ),
+            )
+        if (machine or platform.machine()).lower() == "x86_64":
+            # Intel source builds use the shared CPU ONNX inventory. The
+            # packaged Metal cleanup sidecar remains Apple Silicon-only.
+            states["model-lifecycle"] = (
+                CapabilityState.AVAILABLE,
+                "onnx-verified",
+            )
+            states["managed-local-enhancement"] = (
+                CapabilityState.UNAVAILABLE,
+                "apple-silicon-runtime-required",
             )
         states["qwen-stt"] = (
             CapabilityState.AVAILABLE,

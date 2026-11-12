@@ -235,8 +235,8 @@ def run_probe(
         raise RuntimeError("probe data directory already exists")
     if data_dir == Path.home().resolve() or len(data_dir.parts) < 4:
         raise RuntimeError("probe data directory is too broad")
-    if platform.system() != "Darwin" or platform.machine() != "arm64":
-        raise RuntimeError("protected-storage probe requires native Darwin arm64")
+    if platform.system() != "Darwin" or platform.machine().lower() not in {"arm64", "aarch64", "x86_64"}:
+        raise RuntimeError("protected-storage probe requires native Darwin arm64 or x86_64")
 
     service = macos_keychain_service(test_namespace=test_namespace)
     data_dir.parent.mkdir(parents=True, exist_ok=True, mode=0o700)

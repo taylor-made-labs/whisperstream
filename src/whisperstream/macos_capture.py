@@ -145,8 +145,8 @@ class _NativeCoreAudioBridge:
     """Minimal direct bridge for stable identity and format metadata."""
 
     def __init__(self) -> None:
-        if platform.system() != "Darwin" or platform.machine() != "arm64":
-            raise RuntimeError("native CoreAudio adapter requires Darwin arm64")
+        if platform.system() != "Darwin" or platform.machine().lower() not in {"arm64", "aarch64", "x86_64"}:
+            raise RuntimeError("native CoreAudio adapter requires Darwin arm64 or x86_64")
         self._audio = ctypes.CDLL(str(_CORE_AUDIO_FRAMEWORK))
         self._cf = ctypes.CDLL(str(_CORE_FOUNDATION_FRAMEWORK))
         self._portaudio: ctypes.CDLL | None = None
@@ -615,9 +615,9 @@ class MacosCaptureAdapter:
         _bridge: _CoreAudioBridge | None = None,
         _permission_state: Callable[[], PermissionState] | None = None,
     ) -> None:
-        native_host = platform.system() == "Darwin" and platform.machine() == "arm64"
+        native_host = platform.system() == "Darwin" and platform.machine().lower() in {"arm64", "aarch64", "x86_64"}
         if not native_host and not (_bridge is not None and _permission_state is not None):
-            raise RuntimeError("macOS capture adapter requires Darwin arm64")
+            raise RuntimeError("macOS capture adapter requires Darwin arm64 or x86_64")
         CaptureFormat(sample_rate=sample_rate, channels=channels, dtype=dtype)
         self.sample_rate, self.channels, self.dtype = sample_rate, channels, dtype
         self._device_name = device

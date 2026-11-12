@@ -18,7 +18,8 @@ dependencies = [
     "numpy>=2.3.4",
     "sherpa-onnx==1.13.8",
     "sherpa-onnx-core==1.13.8",
-    "onnxruntime>=1.23.0",
+    "onnxruntime>=1.23.0; sys_platform != 'darwin' or platform_machine != 'x86_64'",
+    "onnxruntime==1.23.2; sys_platform == 'darwin' and platform_machine == 'x86_64'",
     "platformdirs>=4.5.0",
     "psutil>=5.9.0",
     "pycaw>=20230407; sys_platform == 'win32'",
@@ -78,21 +79,24 @@ markers = [
 ]
 
 [tool.uv]
-environments = ["sys_platform == 'win32' and platform_machine == 'AMD64'", "sys_platform == 'darwin' and platform_machine == 'arm64'"]
+environments = ["sys_platform == 'win32' and platform_machine == 'AMD64'", "sys_platform == 'darwin' and platform_machine == 'arm64'", "sys_platform == 'darwin' and platform_machine == 'x86_64' and python_version < '3.14'"]
 
 # Official platform wheels only. No sdist or alternate native payload fallback.
 [tool.uv.sources]
 sherpa-onnx = [
+    { url = "https://files.pythonhosted.org/packages/36/e6/a19257d7c60bf04c07f8d0772b943b6596b6b10cfb0694b7794d36630d40/sherpa_onnx-1.13.8-cp312-cp312-macosx_10_15_x86_64.whl", marker = "sys_platform == 'darwin' and platform_machine == 'x86_64' and python_version == '3.12'" },
+    { url = "https://files.pythonhosted.org/packages/7d/4d/b442afd30eff64b83112b54fa866c5d2e3a5aeec13ee8bd665c7b146fba1/sherpa_onnx-1.13.8-cp313-cp313-macosx_10_15_x86_64.whl", marker = "sys_platform == 'darwin' and platform_machine == 'x86_64' and python_version == '3.13'" },
     { url = "https://files.pythonhosted.org/packages/24/af/33e9dcaa527bbc0c2526959713626607a46da2d7b19871b7773d8607d356/sherpa_onnx-1.13.8-cp312-cp312-win_amd64.whl", marker = "sys_platform == 'win32' and python_version == '3.12'" },
     { url = "https://files.pythonhosted.org/packages/52/1f/a96759b33dab99647e57f94040d678c332e0d7eb595127d1e0b4e0b9af27/sherpa_onnx-1.13.8-cp313-cp313-win_amd64.whl", marker = "sys_platform == 'win32' and python_version == '3.13'" },
     { url = "https://files.pythonhosted.org/packages/24/a5/100a7c200e696b2756838b0bdb83e9cf96f62e524d44d43daba0a8e9d6fe/sherpa_onnx-1.13.8-cp314-cp314-win_amd64.whl", marker = "sys_platform == 'win32' and python_version == '3.14'" },
-    { url = "https://files.pythonhosted.org/packages/78/6e/8d9b92e95896ec500084e706529f5637eff797246e74c498922f6aa13a53/sherpa_onnx-1.13.8-cp312-cp312-macosx_11_0_arm64.whl", marker = "sys_platform == 'darwin' and python_version == '3.12'" },
-    { url = "https://files.pythonhosted.org/packages/ce/7b/9829c8e222e6103fd3571523252974c1095c49ae7d1511babf46c4f0d6ea/sherpa_onnx-1.13.8-cp313-cp313-macosx_11_0_arm64.whl", marker = "sys_platform == 'darwin' and python_version == '3.13'" },
-    { url = "https://files.pythonhosted.org/packages/33/f5/ff7f45799a1a77f165410fce5080be2cb59cfc98375bf4a56d7d1fe80540/sherpa_onnx-1.13.8-cp314-cp314-macosx_11_0_arm64.whl", marker = "sys_platform == 'darwin' and python_version == '3.14'" },
+    { url = "https://files.pythonhosted.org/packages/78/6e/8d9b92e95896ec500084e706529f5637eff797246e74c498922f6aa13a53/sherpa_onnx-1.13.8-cp312-cp312-macosx_11_0_arm64.whl", marker = "sys_platform == 'darwin' and platform_machine == 'arm64' and python_version == '3.12'" },
+    { url = "https://files.pythonhosted.org/packages/ce/7b/9829c8e222e6103fd3571523252974c1095c49ae7d1511babf46c4f0d6ea/sherpa_onnx-1.13.8-cp313-cp313-macosx_11_0_arm64.whl", marker = "sys_platform == 'darwin' and platform_machine == 'arm64' and python_version == '3.13'" },
+    { url = "https://files.pythonhosted.org/packages/33/f5/ff7f45799a1a77f165410fce5080be2cb59cfc98375bf4a56d7d1fe80540/sherpa_onnx-1.13.8-cp314-cp314-macosx_11_0_arm64.whl", marker = "sys_platform == 'darwin' and platform_machine == 'arm64' and python_version == '3.14'" },
 ]
 sherpa-onnx-core = [
+    { url = "https://files.pythonhosted.org/packages/17/2d/98e309811cff9fec48ae48a051b4caab44046755f6bc58daab0c475f40cb/sherpa_onnx_core-1.13.8-py3-none-macosx_10_15_x86_64.whl", marker = "sys_platform == 'darwin' and platform_machine == 'x86_64'" },
     { url = "https://files.pythonhosted.org/packages/94/38/64356ad97f68fffcf01fe7545407ad18a2ea86c1ffae5b0950f7fac73638/sherpa_onnx_core-1.13.8-py3-none-win_amd64.whl", marker = "sys_platform == 'win32'" },
-    { url = "https://files.pythonhosted.org/packages/8c/2a/2a47b423fe009bbbcb6d7eed7bcba755d6f9ae923b5664c7208128c32d06/sherpa_onnx_core-1.13.8-py3-none-macosx_11_0_arm64.whl", marker = "sys_platform == 'darwin'" },
+    { url = "https://files.pythonhosted.org/packages/8c/2a/2a47b423fe009bbbcb6d7eed7bcba755d6f9ae923b5664c7208128c32d06/sherpa_onnx_core-1.13.8-py3-none-macosx_11_0_arm64.whl", marker = "sys_platform == 'darwin' and platform_machine == 'arm64'" },
 ]
 
 [dependency-groups]

@@ -127,6 +127,14 @@ def _onefile_install_dir() -> Optional[Path]:
     return None
 
 
+def bundled_llama_runtime_supported() -> bool:
+    """The shipped Mac cleanup sidecar currently targets Apple Silicon only."""
+    return not (
+        platform.system() == "Darwin"
+        and platform.machine().lower() == "x86_64"
+    )
+
+
 def find_bundled_llama_server() -> Optional[Path]:
     """Return the platform llama-server sidecar, or ``None`` if not found.
 
@@ -140,6 +148,10 @@ def find_bundled_llama_server() -> Optional[Path]:
     3. ``src-tauri/binaries/llama-server-x86_64-pc-windows-msvc.exe`` relative to
        the repo root (dev runs using the source tree).
     """
+    if not bundled_llama_runtime_supported():
+        # Never select a stale arm64 binary from an Intel source checkout or
+        # an app bundle. CPU dictation and Agent Speak do not need this binary.
+        return None
     _logger = logging.getLogger(__name__)
     candidate_dirs: list[Path] = []
 

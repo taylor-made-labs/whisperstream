@@ -34,6 +34,8 @@ mod macos_phase4_probe;
 mod macos_process_adapter;
 #[cfg(target_os = "macos")]
 mod macos_window_lifecycle;
+#[cfg(all(debug_assertions, target_os = "macos"))]
+mod source_backend;
 pub mod window_lifecycle_contract;
 #[cfg(target_os = "windows")]
 #[cfg_attr(debug_assertions, allow(dead_code))]
@@ -194,7 +196,14 @@ where
 // manually-started backend exits with the desktop shell. Hardcoded to the
 // default dev port (matches `npm run backend` and the production sidecar).
 #[cfg(debug_assertions)]
-pub(crate) fn signal_dev_backend_shutdown() {
+pub(crate) fn signal_dev_backend_shutdown(_app: &tauri::AppHandle) {
+    // Source bundles own a generation-bound child. Their Exit handler handles
+    // shutdown; never send the legacy unscoped request to a replacement server.
+    #[cfg(target_os = "macos")]
+    if _app.try_state::<source_backend::SourceBackend>().is_some() {
+        return;
+    }
+
     use std::io::Write;
     use std::net::TcpStream;
     use std::time::Duration;
@@ -579,6 +588,13 @@ pub fn run() {
             macos_application_is_active
         ]))
         .setup(|app| {
+            // A signed source-debug bundle may opt in to keeping Python under
+            // this GUI's process identity. Wait before presenting its windows.
+            #[cfg(all(debug_assertions, target_os = "macos"))]
+            if let Some(backend) = source_backend::SourceBackend::start_if_configured()? {
+                app.manage(backend);
+            }
+
             // Launched via autostart? tauri-plugin-autostart appends
             // `--minimized` to the Run value, so a login launch starts hidden
             // in the tray instead of popping the settings window.
@@ -635,7 +651,7 @@ pub fn run() {
                         }
                         "quit" => {
                             #[cfg(debug_assertions)]
-                            signal_dev_backend_shutdown();
+                            signal_dev_backend_shutdown(app);
                             app.exit(0);
                         }
                         _ => {}
@@ -753,6 +769,12 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             if let tauri::RunEvent::Exit = _event {
                 macos_file_workflows::cleanup_native_selection_registry();
+            }
+            #[cfg(all(debug_assertions, target_os = "macos"))]
+            if let tauri::RunEvent::Exit = _event {
+                if let Some(backend) = _app_handle.try_state::<source_backend::SourceBackend>() {
+                    backend.shutdown();
+                }
             }
             #[cfg(all(not(debug_assertions), any(target_os = "windows", target_os = "macos")))]
             if let tauri::RunEvent::Exit = _event {

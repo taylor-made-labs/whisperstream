@@ -895,6 +895,7 @@ def test_find_bundled_llama_server_finds_dev_binary(tmp_path: Path):
     with (
         patch("sys.executable", str(tmp_path / "no_such_exe")),  # packaged path misses
         patch.object(_ls_mod, "__file__", str(fake_module)),
+        patch.object(_ls_mod.platform, "system", return_value="Windows"),
     ):
         result = _ls_mod.find_bundled_llama_server()
 
@@ -1395,6 +1396,7 @@ def test_extensionless_onefile_install_discovery_is_mac_only(monkeypatch, tmp_pa
     cache.mkdir()
     monkeypatch.delenv("NUITKA_ONEFILE_BINARY", raising=False)
     monkeypatch.setattr(module.platform, "system", lambda: system)
+    monkeypatch.setattr(module.platform, "machine", lambda: "arm64" if system == "Darwin" else "AMD64")
     monkeypatch.setattr(module.sys, "argv", [str(install / "whisperstream-engine")])
     monkeypatch.setattr(module.sys, "executable", str(cache / "whisperstream-engine"))
     monkeypatch.setattr(module, "__file__", str(cache / "whisperstream/llama_server.py"))

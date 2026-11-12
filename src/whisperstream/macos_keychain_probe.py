@@ -52,8 +52,8 @@ def _write_new_json(path: Path, payload: dict[str, object]) -> None:
 
 
 def run_probe(*, output: Path, test_namespace: str) -> dict[str, object]:
-    if platform.system() != "Darwin" or platform.machine() != "arm64":
-        raise RuntimeError("real Keychain probe requires native Darwin arm64")
+    if platform.system() != "Darwin" or platform.machine().lower() not in {"arm64", "aarch64", "x86_64"}:
+        raise RuntimeError("real Keychain probe requires native Darwin arm64 or x86_64")
 
     service = macos_keychain_service(test_namespace=test_namespace)
     store = MacosKeychainProtectedSecretStore(test_namespace=test_namespace)

@@ -86,13 +86,15 @@ On a Mac, the default base folder is `~/Library/Application Support/Whisperstrea
 
 Parakeet v2, Qwen3-ASR, Cohere Transcribe, Gemma 4 E2B, and Stream-1 Mini use the same files and checksums as Windows.
 
-Parakeet v3 is different on a Mac. It runs on an Apple silicon engine and uses a Core ML version of the model, not the ONNX bundle in this guide. The ONNX files cannot replace it. Whisperstream downloads it from [FluidInference/parakeet-tdt-0.6b-v3-coreml](https://huggingface.co/FluidInference/parakeet-tdt-0.6b-v3-coreml/tree/aed02740059203c4a87495924f685de3722ae9ce) at revision `aed02740059203c4a87495924f685de3722ae9ce` and checks every file before use. It is stored in:
+Parakeet v3 is different on an Apple Silicon Mac. It runs on an Apple silicon engine and uses a Core ML version of the model, not the ONNX bundle in this guide. The ONNX files cannot replace it. Whisperstream downloads it from [FluidInference/parakeet-tdt-0.6b-v3-coreml](https://huggingface.co/FluidInference/parakeet-tdt-0.6b-v3-coreml/tree/aed02740059203c4a87495924f685de3722ae9ce) at revision `aed02740059203c4a87495924f685de3722ae9ce` and checks every file before use. It is stored in:
 
 ```text
 ~/Library/Application Support/FluidAudio/Models/parakeet-tdt-0.6b-v3/
 ```
 
 If you moved it with **Model storage location**, it is under the folder you chose. To restore it without downloading, copy the complete `parakeet-tdt-0.6b-v3` folder from a working Mac's backup into that location. Otherwise, let Whisperstream download it again.
+
+Experimental Intel Mac source builds use the same ONNX speech model files and checksums as Windows, including Parakeet v3. The FluidAudio Core ML files above are not used on Intel. Managed local AI cleanup models are unavailable in the Intel source build.
 
 To check a file's SHA256 on a Mac, run `shasum -a 256` followed by the file path in Terminal.
 

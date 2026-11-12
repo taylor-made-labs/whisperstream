@@ -144,6 +144,75 @@ def test_worker_serializes_complete_timed_metadata(tmp_path: Path, operation: st
     recognizer.decode_stream.assert_called_once_with(stream)
 
 
+@pytest.mark.parametrize("operation", ["preview", "transcribe_chunk", "transcribe"])
+@pytest.mark.parametrize(
+    "sample_rate,sample_count",
+    [(16_000, 0), (16_000, 1), (16_000, 56), (16_000, 79),
+     (8_000, 39), (22_050, 110), (48_000, 239)],
+)
+def test_worker_skips_audio_without_a_feature_frame(
+    operation: str, sample_rate: int, sample_count: int,
+) -> None:
+    runtime = ParakeetWorkerRuntime()
+    recognizer = MagicMock()
+    runtime._recognizer = recognizer
+    runtime.loaded = True
+    audio_body, payload = encode_audio_request(
+        np.full(sample_count, 0.01, dtype=np.float32), sample_rate=sample_rate,
+    )
+
+    body, should_exit = runtime.dispatch(_request(operation, audio_body), payload)
+
+    assert body == {
+        "text": "",
+        **({"busy": False, "metadata": "timed_tokens"} if operation == "preview" else {}),
+    }
+    assert should_exit is False
+    assert runtime.loaded is True
+    recognizer.create_stream.assert_not_called()
+    recognizer.decode_stream.assert_not_called()
+
+
+@pytest.mark.parametrize("operation", ["preview", "transcribe_chunk", "transcribe"])
+@pytest.mark.parametrize(
+    "sample_rate,sample_count",
+    [(16_000, 80), (16_000, 81), (16_000, 1600),
+     (8_000, 40), (22_050, 111), (48_000, 240)],
+)
+def test_worker_preserves_audio_at_and_above_first_feature_frame(
+    operation: str, sample_rate: int, sample_count: int,
+) -> None:
+    runtime = ParakeetWorkerRuntime()
+    recognizer = MagicMock()
+    stream = MagicMock()
+    stream.result = SimpleNamespace(text="short utterance")
+    recognizer.create_stream.return_value = stream
+    runtime._recognizer = recognizer
+    audio = np.linspace(-0.01, 0.01, sample_count, dtype=np.float32)
+    audio_body, payload = encode_audio_request(audio, sample_rate=sample_rate)
+
+    body, _ = runtime.dispatch(_request(operation, audio_body), payload)
+
+    assert body["text"] == "short utterance"
+    recognizer.decode_stream.assert_called_once_with(stream)
+    accepted_rate, accepted_audio = stream.accept_waveform.call_args.args
+    assert accepted_rate == sample_rate
+    np.testing.assert_array_equal(accepted_audio, audio)
+
+
+def test_worker_does_not_hide_decoder_failures_after_first_feature_frame() -> None:
+    runtime = ParakeetWorkerRuntime()
+    recognizer = MagicMock()
+    recognizer.decode_stream.side_effect = RuntimeError("synthetic decoder failure")
+    runtime._recognizer = recognizer
+    audio_body, payload = encode_audio_request(
+        np.zeros(80, dtype=np.float32), sample_rate=16_000,
+    )
+
+    with pytest.raises(RuntimeError, match="synthetic decoder failure"):
+        runtime.dispatch(_request("transcribe_chunk", audio_body), payload)
+
+
 def test_worker_hotword_update_reconstructs_recognizer() -> None:
     runtime = ParakeetWorkerRuntime()
     runtime._model_dir = Path(r"C:\Models\Parakeet")

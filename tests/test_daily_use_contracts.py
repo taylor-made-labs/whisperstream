@@ -195,9 +195,9 @@ def test_settings_capability_contract_is_truthful_and_serializable() -> None:
     assert DAILY_USE_CAPABILITY_SCHEMA_VERSION == 1
     windows = create_daily_use_capability_report("Windows")
     darwin = create_daily_use_capability_report(
-        "Darwin", audio_policy_available=True
+        "Darwin", audio_policy_available=True, machine="arm64"
     )
-    darwin_unconfirmed = create_daily_use_capability_report("Darwin")
+    darwin_unconfirmed = create_daily_use_capability_report("Darwin", machine="arm64")
     unknown = create_daily_use_capability_report("Plan9")
     windows_payload = windows.as_dict()
     json.dumps(windows_payload)

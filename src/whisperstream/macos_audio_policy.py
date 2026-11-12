@@ -96,8 +96,8 @@ class _NativeCoreAudioOutputBridge:
     """Minimal passive/current-output bridge plus exact property writes."""
 
     def __init__(self) -> None:
-        if platform.system() != "Darwin" or platform.machine() != "arm64":
-            raise RuntimeError("native CoreAudio output policy requires Darwin arm64")
+        if platform.system() != "Darwin" or platform.machine().lower() not in {"arm64", "aarch64", "x86_64"}:
+            raise RuntimeError("native CoreAudio output policy requires Darwin arm64 or x86_64")
         self._audio = ctypes.CDLL(str(_CORE_AUDIO_FRAMEWORK))
         self._cf = ctypes.CDLL(str(_CORE_FOUNDATION_FRAMEWORK))
         self._audio.AudioObjectHasProperty.argtypes = [

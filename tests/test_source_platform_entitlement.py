@@ -6,7 +6,7 @@ from whisperstream.history_security_contract import LicenseState
 from whisperstream.license_manager import LicenseManager
 
 
-@pytest.mark.parametrize("system,machine", [("Darwin", "arm64"), ("Windows", "x86_64")])
+@pytest.mark.parametrize("system,machine", [("Darwin", "arm64"), ("Darwin", "x86_64"), ("Windows", "x86_64")])
 def test_platform_entitlement_has_no_paid_cache_or_activation(system, machine):
     manager = LicenseManager()
     factory = PlatformHistorySecurityFactory(

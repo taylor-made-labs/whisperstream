@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import logging
 import os
+import platform
 import socket
 import stat
 import sys
@@ -31,8 +32,8 @@ from whisperstream.stt_factory import make_stt_manager, stt_model_status
 
 
 pytestmark = pytest.mark.skipif(
-    sys.platform != "darwin",
-    reason="the native FluidAudio backend integration is macOS-only",
+    sys.platform != "darwin" or platform.machine().lower() not in {"arm64", "aarch64"},
+    reason="the native FluidAudio backend integration requires Apple Silicon",
 )
 
 

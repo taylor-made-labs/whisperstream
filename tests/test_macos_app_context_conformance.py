@@ -87,13 +87,14 @@ def _config(app_id: str) -> WhisperstreamConfig:
 
 
 def test_darwin_factory_selects_native_adapter_without_affecting_windows() -> None:
-    with patch(
-        "whisperstream.macos_app_context._NativeMacosWorkspace",
-        return_value=_Workspace(None),
-    ):
-        mac = create_application_context_adapter(system="Darwin", machine="arm64")
-    assert isinstance(mac, MacosApplicationContextAdapter)
-    mac.close()
+    for machine in ("arm64", "aarch64", "x86_64"):
+        with patch(
+            "whisperstream.macos_app_context._NativeMacosWorkspace",
+            return_value=_Workspace(None),
+        ):
+            mac = create_application_context_adapter(system="Darwin", machine=machine)
+        assert isinstance(mac, MacosApplicationContextAdapter)
+        mac.close()
 
     windows = create_application_context_adapter(system="Windows", machine="AMD64")
     assert windows.__class__.__name__ == "WindowsApplicationContextAdapter"
