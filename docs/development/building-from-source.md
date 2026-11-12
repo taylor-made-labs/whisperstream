@@ -51,6 +51,12 @@ not need to run. To choose another isolated profile, pass `--data-dir /absolute/
 The installed application's data directory is refused. Pass `--no-hotkeys` to
 build an app whose backend does not register global shortcuts.
 
+Choose a distinct push-to-talk combination in Controls for live testing, such
+as Control+Option+Space. The default Right Shift binding also activates when
+you use that key to capitalize text. Agent reply tests require agent connections
+to be allowed; Lockdown Mode deliberately disables them even with local speech
+models.
+
 The source app remains tied to this checkout and its `.venv`; it is not a
 standalone installer. Grant permissions to the built app when macOS prompts.
 Rebuilding an ad-hoc signed app changes its identity and may require refreshing
