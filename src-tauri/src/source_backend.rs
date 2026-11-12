@@ -17,7 +17,9 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 const POLL_INTERVAL: Duration = Duration::from_millis(100);
-const STARTUP_ATTEMPTS: usize = 300;
+// Cold native Python imports on Intel can exceed 30 seconds. Allow a bounded
+// three-minute nominal wait before treating this owned backend as failed.
+const STARTUP_ATTEMPTS: usize = 1800;
 const SHUTDOWN_ATTEMPTS: usize = 30;
 
 #[derive(Debug, Deserialize)]
